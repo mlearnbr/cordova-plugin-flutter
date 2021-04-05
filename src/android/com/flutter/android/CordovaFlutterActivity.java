@@ -22,34 +22,7 @@ public class CordovaFlutterActivity extends io.flutter.embedding.android.Flutter
         CordovaFlutterActivity.instance = this;
     }
 
-    @Override
-    public void configureFlutterEngine(FlutterEngine flutterEngine) {
-
-        MethodChannel methodChannel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL_NAME);
-        methodChannel.setMethodCallHandler((call, result) -> {
-            if (call.method.equals("finish")) {
-                Intent intent = new Intent(this, FlutterCordovaPlugin.instance.cordova.getActivity().getClass());
-                if (call.arguments != null) {
-                    HashMap<String, Object> argHashMap = (HashMap<String, Object>) call.arguments;
-                    JSONObject argJSONObject = new JSONObject(argHashMap);
-                    intent.putExtra("result", argJSONObject.toString());
-                } else {
-                    intent.putExtra("result", new HashMap<String, Object>());
-                }
-                setResult(Activity.RESULT_OK, intent);
-                finish();
-                result.success(true);
-            }
-        });
-    }
-
-    public static NewMyEngineIntentBuilder withNewEngine(Class<? extends FlutterActivity> activityClass) {
-        return new NewMyEngineIntentBuilder(activityClass);
-    }
-
-    public static class NewMyEngineIntentBuilder extends NewEngineIntentBuilder {
-        protected NewMyEngineIntentBuilder(Class<? extends FlutterActivity> activityClass) {
-            super(activityClass);
-        }
+    public static CachedEngineIntentBuilder withCachedEngine(String cachedEngineId) {
+        return new CachedEngineIntentBuilder(CordovaFlutterActivity.class, cachedEngineId);
     }
 }
