@@ -105,17 +105,20 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        // 这个方法桥接js，返回flutter的结果
-        if (resultCode == Activity.RESULT_OK) {
-            String result = intent.getStringExtra("result");
-            cordova.getThreadPool().execute(new Runnable() {
-                public void run() {
-                    openCallbackContext.success(result);
+        cordova.getThreadPool().execute(() -> {
+            try {
+                // 这个方法桥接js，返回flutter的结果
+                if (resultCode == Activity.RESULT_OK) {
+                    String result = intent.getStringExtra("result");
+                    openCallbackContext.success(new JSONObject(result));
+                    return;
                 }
-            });
-        } else if (resultCode == Activity.RESULT_CANCELED) {
 
-        }
+                openCallbackContext.success(new JSONObject());
+            } catch (Exception ex) {
+                openCallbackContext.error(ex.getMessage());
+            }
+        });        
     }
 
     private void initFlutterEngine() throws Exception  {
