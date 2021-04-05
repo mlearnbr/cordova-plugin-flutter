@@ -125,7 +125,23 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
         methodChannel.setMethodCallHandler((call, result) -> {
             HashMap<String, Object> arguments = (HashMap<String, Object>) call.arguments;
 
+            if (call.method.equals("finish")) {
+                finishFlutterActivity(arguments);
+                result.success(true);
+                return;
+            }
+
             result.notImplemented();
         });
+    }
+
+    private void finishFlutterActivity(HashMap<String, Object> arguments) {
+        Intent intent = new Intent();
+
+        JSONObject argJSONObject = new JSONObject(arguments);
+        intent.putExtra("result", argJSONObject.toString());
+
+        CordovaFlutterActivity.instance.setResult(Activity.RESULT_OK, intent);
+        CordovaFlutterActivity.instance.finish();
     }
 }
