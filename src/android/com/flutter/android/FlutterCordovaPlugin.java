@@ -39,47 +39,45 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
         // 参考文档 https://flutter.dev/docs/development/add-to-app/android/add-flutter-screen
         if (action.equals("init")) {
-            this.cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        initFlutterEngine();
-                        // 初始化成功
-                        cordova.getThreadPool().execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                callbackContext.success();
-                            }
-                        });
-                    } catch (Exception ex) {
-                        // 初始化失败
-                        cordova.getThreadPool().execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                callbackContext.error(ex.getMessage());
-                            }
-                        });
-                    }
-                }
-            });
-            return true;
+            return prepareInitAction(args, callbackContext);
         }
 
         if (action.equals("open")) {
-            this.cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        open(args, callbackContext);
-                    } catch (Exception ex) {
-                        callbackContext.error(ex.getMessage());
-                    }
-                }
-            });
-
-            return true;
+            return prepareOpenAction(args, callbackContext);
         }
+        
         return false;
+    }
+
+    private boolean prepareInitAction(JSONArray args, final CallbackContext callbackContext) {
+        this.cordova.getActivity().runOnUiThread(() -> {
+            try {
+                initFlutterEngine();
+                // 初始化成功
+                cordova.getThreadPool().execute(() -> {
+                    callbackContext.success();
+                });
+            } catch (Exception ex) {
+                // 初始化失败
+                cordova.getThreadPool().execute(() -> {
+                    callbackContext.error(ex.getMessage());
+                });
+            }
+        });
+
+        return true;
+    }
+
+    private boolean prepareOpenAction(JSONArray args, final CallbackContext callbackContext) {
+        this.cordova.getActivity().runOnUiThread(() -> {
+            try {
+                open(args, callbackContext);
+            } catch (Exception ex) {
+                callbackContext.error(ex.getMessage());
+            }
+        });
+
+        return true;
     }
 
     private void open(JSONArray args, final CallbackContext callbackContext) throws Exception {
