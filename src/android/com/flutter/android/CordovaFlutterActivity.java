@@ -15,11 +15,11 @@ import io.flutter.plugin.common.MethodChannel;
 
 
 public class CordovaFlutterActivity extends io.flutter.embedding.android.FlutterActivity {
-
-    private final static String CHANNEL_NAME = "app.channel.shared.cordova.data";
+    public static CordovaFlutterActivity instance;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CordovaFlutterActivity.instance = this;
     }
 
     @Override
