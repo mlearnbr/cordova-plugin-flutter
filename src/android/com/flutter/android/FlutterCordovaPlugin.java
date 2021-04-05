@@ -21,6 +21,7 @@ import io.flutter.plugin.common.MethodChannel;
 public class FlutterCordovaPlugin extends CordovaPlugin {
     private final static String CHANNEL_NAME = "app.channel.shared.cordova.data";
     private final static String FLUTTER_ENGINE_ID = "flutter_engine_id";
+    private final static int FLUTTER_ACTIVITY_ID = 10;
 
     public static FlutterCordovaPlugin instance;
     CallbackContext openCallbackContext = null;
@@ -69,19 +70,7 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
                 @Override
                 public void run() {
                     try {
-                        String routerName = null;
-                        if (args.length() > 0) {
-                            routerName = args.getString(0);
-                        }
-                        initFlutterEngine(routerName);
-                        if (TextUtils.isEmpty(routerName)) {
-                            Intent intent = CordovaFlutterActivity.withNewEngine(CordovaFlutterActivity.class).build(FlutterCordovaPlugin.this.cordova.getActivity());
-                            FlutterCordovaPlugin.this.cordova.startActivityForResult((CordovaPlugin) FlutterCordovaPlugin.this, intent, 10);
-                        } else {
-                            Intent intent = CordovaFlutterActivity.withNewEngine(CordovaFlutterActivity.class).initialRoute(routerName).build(FlutterCordovaPlugin.this.cordova.getActivity());
-                            FlutterCordovaPlugin.this.cordova.startActivityForResult((CordovaPlugin) FlutterCordovaPlugin.this, intent, routerName.hashCode());
-                        }
-                        openCallbackContext = callbackContext;
+                        open(args, callbackContext);
                     } catch (Exception ex) {
                         callbackContext.error(ex.getMessage());
                     }
@@ -91,6 +80,29 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
             return true;
         }
         return false;
+    }
+
+    private void open(JSONArray args, final CallbackContext callbackContext) throws Exception {
+        String routerName = null;
+        if (args.length() > 0) {
+            routerName = args.getString(0);
+        }
+        
+        // Todo: invoke flutter method to navigate to routerName
+
+        Intent intent = CordovaFlutterActivity
+            .withCachedEngine(FLUTTER_ENGINE_ID)
+            .build(FlutterCordovaPlugin.this.cordova.getActivity());
+
+        FlutterCordovaPlugin.this
+            .cordova
+            .startActivityForResult(
+                (CordovaPlugin) FlutterCordovaPlugin.this,
+                intent,
+                FLUTTER_ACTIVITY_ID
+            );
+
+        openCallbackContext = callbackContext;
     }
 
     @Override
