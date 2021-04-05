@@ -10,16 +10,8 @@ import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.util.HashMap;
-
-import io.flutter.embedding.engine.FlutterEngine;
-import io.flutter.embedding.engine.FlutterEngineCache;
-import io.flutter.embedding.engine.dart.DartExecutor;
-import io.flutter.plugins.GeneratedPluginRegistrant;
-import io.flutter.plugin.common.MethodChannel;
 
 public class FlutterCordovaPlugin extends CordovaPlugin {
-    private final static String CHANNEL_NAME = "app.channel.shared.cordova.data";
     private final static String FLUTTER_ENGINE_ID = "flutter_engine_id";
     private final static int FLUTTER_ACTIVITY_ID = 10;
 
@@ -52,7 +44,7 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
     private boolean prepareInitAction(JSONArray args, final CallbackContext callbackContext) {
         this.cordova.getActivity().runOnUiThread(() -> {
             try {
-                initFlutterEngine();
+                FlutterEngineManager.initFlutterEngine(cordova, FLUTTER_ENGINE_ID);
                 // 初始化成功
                 cordova.getThreadPool().execute(() -> {
                     callbackContext.success();
@@ -119,42 +111,5 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
                 openCallbackContext.error(ex.getMessage());
             }
         });        
-    }
-
-    private void initFlutterEngine() throws Exception  {
-        FlutterEngine flutterEngine = new FlutterEngine(cordova.getContext());        
-        flutterEngine.getDartExecutor().executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault());
-        GeneratedPluginRegistrant.registerWith(flutterEngine);
-
-        FlutterEngineCache
-            .getInstance()
-            .put(FLUTTER_ENGINE_ID, flutterEngine);
-
-        createMethodChannel(flutterEngine);
-    }
-
-    private void createMethodChannel(FlutterEngine flutterEngine) {
-        MethodChannel methodChannel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL_NAME);
-        methodChannel.setMethodCallHandler((call, result) -> {
-            HashMap<String, Object> arguments = (HashMap<String, Object>) call.arguments;
-
-            if (call.method.equals("finish")) {
-                finishFlutterActivity(arguments);
-                result.success(true);
-                return;
-            }
-
-            result.notImplemented();
-        });
-    }
-
-    private void finishFlutterActivity(HashMap<String, Object> arguments) {
-        Intent intent = new Intent();
-
-        JSONObject argJSONObject = new JSONObject(arguments);
-        intent.putExtra("result", argJSONObject.toString());
-
-        CordovaFlutterActivity.instance.setResult(Activity.RESULT_OK, intent);
-        CordovaFlutterActivity.instance.finish();
     }
 }
