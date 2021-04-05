@@ -9,13 +9,17 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+import java.util.HashMap;
 
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterEngineCache;
 import io.flutter.embedding.engine.dart.DartExecutor;
 import io.flutter.plugins.GeneratedPluginRegistrant;
+import io.flutter.plugin.common.MethodChannel;
 
 public class FlutterCordovaPlugin extends CordovaPlugin {
+    private final static String CHANNEL_NAME = "app.channel.shared.cordova.data";
     private final static String FLUTTER_ENGINE_ID = "flutter_engine_id";
 
     public static FlutterCordovaPlugin instance;
@@ -112,5 +116,16 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
         FlutterEngineCache
             .getInstance()
             .put(FLUTTER_ENGINE_ID, flutterEngine);
+
+        createMethodChannel(flutterEngine);
+    }
+
+    private void createMethodChannel(FlutterEngine flutterEngine) {
+        MethodChannel methodChannel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL_NAME);
+        methodChannel.setMethodCallHandler((call, result) -> {
+            HashMap<String, Object> arguments = (HashMap<String, Object>) call.arguments;
+
+            result.notImplemented();
+        });
     }
 }
