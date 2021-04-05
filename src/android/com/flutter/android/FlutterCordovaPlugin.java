@@ -16,6 +16,7 @@ import io.flutter.embedding.engine.dart.DartExecutor;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class FlutterCordovaPlugin extends CordovaPlugin {
+    private final static String FLUTTER_ENGINE_ID = "flutter_engine_id";
 
     public static FlutterCordovaPlugin instance;
     CallbackContext openCallbackContext = null;
@@ -37,6 +38,7 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
                 @Override
                 public void run() {
                     try {
+                        initFlutterEngine();
                         // 初始化成功
                         cordova.getThreadPool().execute(new Runnable() {
                             @Override
@@ -102,17 +104,13 @@ public class FlutterCordovaPlugin extends CordovaPlugin {
         }
     }
 
-    private void initFlutterEngine(String routerName) {
-        String enginId = "00000";
-        if (!TextUtils.isEmpty(routerName)) {
-            enginId = routerName;
-        }
-        FlutterEngineCache instance = FlutterEngineCache.getInstance();
-        if (!instance.contains(enginId)) {
-            FlutterEngine flutterEngine = new FlutterEngine(cordova.getContext());
-            flutterEngine.getDartExecutor().executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault());
-            instance.put(enginId, flutterEngine);
-            GeneratedPluginRegistrant.registerWith(flutterEngine);
-        }
+    private void initFlutterEngine() throws Exception  {
+        FlutterEngine flutterEngine = new FlutterEngine(cordova.getContext());        
+        flutterEngine.getDartExecutor().executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault());
+        GeneratedPluginRegistrant.registerWith(flutterEngine);
+
+        FlutterEngineCache
+            .getInstance()
+            .put(FLUTTER_ENGINE_ID, flutterEngine);
     }
 }
